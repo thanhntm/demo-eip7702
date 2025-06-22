@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ModuleSelector } from "@/components/modules/ModuleSelector";
 import { WalletConnect } from "@/components/WalletConnect";
@@ -11,12 +12,15 @@ import { toast } from "sonner";
 import { encodeFunctionData } from "viem";
 import Records from "@/components/history/Records";
 import Footer from "@/components/Footer";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, X } from "lucide-react";
 
 export default function Home() {
   const modules = useTaskStore((state) => state.modules);
   const { isConnected } = useAccount();
+  const [executionError, setExecutionError] = useState<string | null>(null);
 
-  const { write, status } = useBatchCallContract();
+  const { write, status, error } = useBatchCallContract();
 
   const handleExecute = async () => {
     try {
@@ -24,11 +28,28 @@ export default function Home() {
         toast.error("Please add at least one module");
         return;
       }
+
+      // Clear previous errors
+      setExecutionError(null);
+
       write();
-    } catch (error) {
-      alert("Error executing transaction: " + error);
+    } catch (error: any) {
+      const errorMessage =
+        error?.message || error?.toString() || "Unknown error occurred";
+      setExecutionError(errorMessage);
+      toast.error("Transaction execution failed");
+      console.error("Error executing transaction:", error);
     }
   };
+
+  // Handle errors from the contract hook
+  React.useEffect(() => {
+    if (error) {
+      const errorMessage =
+        error?.message || error?.toString() || "Transaction failed";
+      setExecutionError(errorMessage);
+    }
+  }, [error]);
 
   return (
     <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
@@ -97,6 +118,32 @@ export default function Home() {
               )}
             </div>
           </div>
+
+          {/* Error Display Box */}
+          {executionError && (
+            <div className="mb-4">
+              <Alert variant="destructive" className="border-red-200 bg-red-50">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <div className="flex-1 pr-2">
+                    <strong className="font-medium">Transaction Error:</strong>
+                    <div className="mt-1 text-sm break-words">
+                      {executionError}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExecutionError(null)}
+                    className="h-6 w-6 p-0 hover:bg-red-100"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
           <TaskList />
         </div>
       </div>

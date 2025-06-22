@@ -5,11 +5,15 @@ import { EmptyState } from "./EmptyState"
 import { Button } from "@/components/ui/button"
 import { useAccount } from "wagmi"
 import { toast } from "sonner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import { useState } from "react"
 
 export function TaskList() {
   const modules = useTaskStore(state => state.modules)
   const reorderModules = useTaskStore(state => state.reorderModules)
   const { isConnected } = useAccount()
+  const [executionError, setExecutionError] = useState<string | null>(null)
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return
@@ -37,6 +41,9 @@ export function TaskList() {
     }
 
     try {
+      // Clear previous errors
+      setExecutionError(null)
+      
       // Collect all module data
       const transactions = modules.map(module => ({
         contractAddress: module.contractAddress,
@@ -47,7 +54,9 @@ export function TaskList() {
       // TODO: Execute contract transaction
       console.log("Executing transaction:", transactions)
       toast.success("Transaction submitted")
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || error?.toString() || "Transaction execution failed"
+      setExecutionError(errorMessage)
       console.error("Transaction execution failed:", error)
       toast.error("Transaction execution failed")
     }
@@ -61,6 +70,17 @@ export function TaskList() {
 
   return (
     <div className="space-y-3 sm:space-y-4">
+      {/* Error Display */}
+      {executionError && (
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong className="font-medium">Execution Error:</strong>
+            <div className="mt-1 text-sm">{executionError}</div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="task-list">
           {(provided) => (
