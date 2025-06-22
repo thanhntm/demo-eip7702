@@ -18,7 +18,7 @@ export default function Home() {
   const { isConnected } = useAccount();
   const [executionError, setExecutionError] = useState<string | null>(null);
 
-  const { write, status } = useBatchCallContract();
+  const { write, status, error } = useBatchCallContract();
 
   const handleExecute = async () => {
     try {
@@ -43,7 +43,9 @@ export default function Home() {
   // Handle status changes to detect failures
   React.useEffect(() => {
     if (status === "error") {
-      setExecutionError("Transaction failed. Please try again.");
+      setExecutionError(
+        `Transaction failed. Please try again.${error ? " Details: " + JSON.stringify(error) : ""}`
+      );
     }
   }, [status]);
 
