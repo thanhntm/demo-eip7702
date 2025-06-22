@@ -1,52 +1,57 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { ModuleSelector } from "@/components/modules/ModuleSelector"
-import { WalletConnect } from "@/components/WalletConnect"
-import { useAccount } from "wagmi"
-import { useTaskStore } from "@/lib/store"
-import { TaskList } from "@/components/modules/TaskList"
-import { useBatchCallContract } from "@/contracts/useContract"
-import { toast } from "sonner"
-import { encodeFunctionData } from 'viem'
-import Records from "@/components/history/Records"
-import Footer from "@/components/Footer"
+import { Button } from "@/components/ui/button";
+import { ModuleSelector } from "@/components/modules/ModuleSelector";
+import { WalletConnect } from "@/components/WalletConnect";
+import { useAccount } from "wagmi";
+import { useTaskStore } from "@/lib/store";
+import { TaskList } from "@/components/modules/TaskList";
+import { useBatchCallContract } from "@/contracts/useContract";
+import { toast } from "sonner";
+import { encodeFunctionData } from "viem";
+import Records from "@/components/history/Records";
+import Footer from "@/components/Footer";
 
 export default function Home() {
-  const modules = useTaskStore(state => state.modules)
-  const { isConnected } = useAccount()
+  const modules = useTaskStore((state) => state.modules);
+  const { isConnected } = useAccount();
 
-  const { write,status } = useBatchCallContract()
+  const { write, status } = useBatchCallContract();
 
   const handleExecute = async () => {
     if (modules.length === 0) {
-      toast.error("Please add at least one module")
-      return
+      toast.error("Please add at least one module");
+      return;
     }
-    write()
-  }
+    write();
+  };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <img src="/logo.svg" alt="logo" width={200} className="mb-4" />
-            <div className="text-xl font-bold mb-2 flex items-center space-x-4">
+    <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div className="flex-1">
+            <div className="mb-4">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                EIP-7702 Aggregator
+              </h1>
+            </div>
+            <div className="text-lg sm:text-xl font-bold mb-2 flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <span>Use EIP-7702 to build and send multiple transactions.</span>
-              <a href="https://github.com/BiscuitCoder/eip-7702-aggregator" target="_blank" rel="noopener noreferrer">
-                <img src="/github.svg" alt="Github" width={20} height={20} />
-              </a>
             </div>
             <p className="text-gray-600">
-              <small className="text-gray-400">
-                <i className="ri-error-warning-fill mr-1 text-red-400"></i> 
-                Note:You need to use the MetaMask and set account as a EIP-7702 smart account.
-                (Currently only support BSC)
-                <a href="https://support.metamask.io/configure/accounts/switch-to-or-revert-from-a-smart-account/" 
-                  target="_blank" rel="noopener noreferrer" className="text-yellow-600 ml-2 underline">
+              <small className="text-xs sm:text-sm text-gray-400">
+                <i className="ri-error-warning-fill mr-1 text-red-400"></i>
+                Note: You need to use the MetaMask and set account as a EIP-7702
+                smart account.
+                <a
+                  href="https://support.metamask.io/configure/accounts/switch-to-or-revert-from-a-smart-account/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-yellow-600 ml-2 underline"
+                >
                   Learn more 👉
-                </a> 
+                </a>
               </small>
             </p>
           </div>
@@ -57,21 +62,18 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6">
         {/* Left module selection area */}
-        <div className="col-span-3">
-          <div className="sticky top-0 bg-white/80 backdrop-blur-sm z-10">
-            <div className="flex items-center py-4 space-x-2">
-              <h2 className="text-lg font-semibold">Available Modules</h2>
-            </div>
+        <div className="xl:col-span-4">
+          <div className="xl:sticky top-0 bg-white/80 backdrop-blur-sm z-10">
             <ModuleSelector />
           </div>
         </div>
 
         {/* Right form area */}
-        <div className="col-span-9">
-          <div className="sticky top-0 bg-white/80 backdrop-blur-sm z-10 py-4">
-            <div className="flex items-center justify-between">
+        <div className="xl:col-span-8">
+          <div className="xl:sticky top-0 bg-white/80 backdrop-blur-sm z-10 py-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
               <div className="flex items-center space-x-2">
                 <h2 className="text-lg font-semibold">Task Chain</h2>
                 <span className="text-sm text-gray-500">
@@ -81,18 +83,19 @@ export default function Home() {
               {modules.length > 0 && isConnected && (
                 <Button
                   onClick={handleExecute}
-                  loading={status === 'pending'}
+                  loading={status === "pending"}
+                  className="w-full sm:w-auto"
                 >
-                  {status === 'pending' ? 'Executing...' : 'Execute Transaction'}
+                  {status === "pending"
+                    ? "Executing..."
+                    : "Execute Transaction"}
                 </Button>
               )}
             </div>
           </div>
-
           <TaskList />
         </div>
       </div>
-      <Footer />  
     </div>
-  )
+  );
 }

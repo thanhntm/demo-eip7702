@@ -58,11 +58,6 @@ export function ModuleCard({
           <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
             {index + 1}
           </div>
-          {/* {isLetter ? (
-            <MethodIcon letter={module.icon} />
-          ) : (
-            <span className="text-xl">{module.icon}</span>
-          )} */}
           <div className="space-y-2">
             <h3 className="font-medium text-2xl">{module.title}</h3>
             <p className="text-sm text-muted-foreground">
@@ -85,7 +80,7 @@ export function ModuleCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid gap-4">
         { module.customComponent ? module.customComponent(module) : customFormInputs.map(renderParamInput) }
       </div>
     </div>

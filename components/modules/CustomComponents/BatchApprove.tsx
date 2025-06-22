@@ -99,64 +99,96 @@ const BatchApprove = (module: TaskModule) => {
   }, [selectedTokens, spenderAddress, amount]);
 
   return (
-    <>
-      {/* Token Selection */}
-      <div className="space-y-2 col-span-2">
-        <Label>Select Tokens</Label>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Token Selection Section */}
+      <div className="space-y-3">
+        <Label className="text-sm sm:text-base font-medium">Select Tokens</Label>
         <TokenSelect tokens={tokens} onChange={handleTokenChange} />
+        {selectedTokens.length > 0 && (
+          <div className="text-xs sm:text-sm text-gray-500">
+            {selectedTokens.length} token(s) selected
+          </div>
+        )}
       </div>
 
-      {/* Spender Address */}
-      <div className="space-y-2">
-        <Label htmlFor="spenderAddress">Spender Address</Label>
-        <Input
-          id="spenderAddress"
-          placeholder="Enter spender address"
-          value={spenderAddress}
-          onChange={(e) => setSpenderAddress(e.target.value)}
-        />
+      {/* Input Fields Section */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="spenderAddress" className="text-sm font-medium">
+            Spender Address
+          </Label>
+          <Input
+            id="spenderAddress"
+            placeholder="0x..."
+            value={spenderAddress}
+            onChange={(e) => setSpenderAddress(e.target.value)}
+            className="text-sm w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="amount" className="text-sm font-medium">
+            Amount per Token
+          </Label>
+          <Input
+            id="amount"
+            placeholder="100"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="text-sm w-full"
+          />
+        </div>
       </div>
 
-      {/* Amount */}
-      <div className="space-y-2">
-        <Label htmlFor="amount">Amount</Label>
-        <Input
-          id="amount"
-          placeholder="Enter approval amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-      </div>
+      {/* Check Allowances Section */}
+      {selectedTokens.length > 0 && spenderAddress && (
+        <div className="space-y-3">
+          <Button 
+            onClick={checkAllowances}
+            disabled={checking || !address}
+            variant="outline"
+            className="w-full"
+            size="sm"
+          >
+            {checking ? "Checking..." : "Check Current Allowances"}
+          </Button>
 
-      {/* Check Allowances Button */}
-      <div className="space-y-2 col-span-2">
-        <Button 
-          onClick={checkAllowances}
-          disabled={checking || !address || !spenderAddress || !selectedTokens.length}
-          variant="outline"
-          className="w-full"
-        >
-          {checking ? "Checking..." : "Check Current Allowances"}
-        </Button>
-      </div>
-
-      {/* Display Allowances */}
-      {Object.keys(allowances).length > 0 && (
-        <div className="space-y-2 col-span-2">
-          <Label>Current Allowances</Label>
-          <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-            {selectedTokens.map(token => (
-              <div key={token.address} className="flex justify-between items-center">
-                <span className="font-medium">{token.symbol}:</span>
-                <span className="text-green-600">
-                  {allowances[token.address] || "0"} {token.symbol}
-                </span>
+          {/* Display Allowances */}
+          {Object.keys(allowances).length > 0 && (
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Current Allowances</Label>
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3">
+                {selectedTokens.map(token => (
+                  <div key={token.address} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-medium">
+                        {token.symbol.charAt(0)}
+                      </span>
+                      <span className="font-medium text-sm">{token.symbol}</span>
+                    </div>
+                    <span className="text-green-600 text-sm font-medium">
+                      {allowances[token.address] || "0"}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Summary Section */}
+      {selectedTokens.length > 0 && amount && spenderAddress && (
+        <div className="bg-blue-50 rounded-lg p-3 sm:p-4 space-y-2">
+          <h4 className="text-sm font-medium text-blue-900">Transaction Summary</h4>
+          <div className="text-xs text-blue-700 space-y-1">
+            <div>• Approving {selectedTokens.length} token(s)</div>
+            <div>• Amount: {amount} per token</div>
+            <div className="break-all">• Spender: {spenderAddress.slice(0, 8)}...{spenderAddress.slice(-6)}</div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

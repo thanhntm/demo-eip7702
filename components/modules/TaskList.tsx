@@ -60,14 +60,14 @@ export function TaskList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="task-list">
           {(provided) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
-              className="space-y-4"
+              className="space-y-3 sm:space-y-4"
             >
               {modules.map((module, index) => (
                 <Draggable
@@ -79,7 +79,7 @@ export function TaskList() {
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      className={snapshot.isDragging ? "opacity-50" : ""}
+                      className={`${snapshot.isDragging ? "opacity-50" : ""} w-full`}
                     >
                       <ModuleCard
                         module={module}
@@ -97,4 +97,4 @@ export function TaskList() {
       </DragDropContext>
     </div>
   )
-} 
+}

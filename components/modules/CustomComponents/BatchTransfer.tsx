@@ -100,69 +100,84 @@ const BatchTransfer = (module: TaskModule) => {
   }, [transfers, module.id, updateModule]);
 
   return (
-    <div className="space-y-6 col-span-2">
+    <div className="space-y-4 sm:space-y-6 w-full">
       <div className="space-y-4">
         {transfers.map((transfer, index) => (
-          <div key={index} className="flex items-end gap-4 p-4 rounded-lg border border-gray-100">
-            <div className="w-[160px]">
-              <TokenSelectSingle
-                value={transfer.token}
-                onChange={(value) => handleTransferChange(index, "token", value)}
-              />
-            </div>
-            <div className="w-[160px]">
-              <Input
-                id={`owner-${index}`}
-                placeholder="Owner address"
-                value={transfer.owner}
-                onChange={(e) =>
-                  handleTransferChange(index, "owner", e.target.value)
-                }
-                className="h-10 bg-white"
-              />
-            </div>
-            <div className="w-[160px]">
-              <Input
-                id={`amount-${index}`}
-                type="number"
-                placeholder="Enter amount"
-                value={transfer.amount}
-                onChange={(e) =>
-                  handleTransferChange(index, "amount", e.target.value)
-                }
-                className="h-10 bg-white"
-              />
-            </div>
-            <div className="flex-1">
-              <Input
-                id={`address-${index}`}
-                placeholder="Enter recipient address"
-                value={transfer.recipient}
-                onChange={(e) =>
-                  handleTransferChange(index, "recipient", e.target.value)
-                }
-                className="h-10 bg-white"
-              />
+          <div key={index} className="p-3 sm:p-4 rounded-lg border border-gray-100 space-y-4">
+            {/* Mobile: Stack all fields vertically */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Token</label>
+                <TokenSelectSingle
+                  value={transfer.token}
+                  onChange={(value) => handleTransferChange(index, "token", value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Owner</label>
+                <Input
+                  id={`owner-${index}`}
+                  placeholder="Owner address"
+                  value={transfer.owner}
+                  onChange={(e) =>
+                    handleTransferChange(index, "owner", e.target.value)
+                  }
+                  className="h-10 bg-white text-sm"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Amount</label>
+                <Input
+                  id={`amount-${index}`}
+                  type="number"
+                  placeholder="Enter amount"
+                  value={transfer.amount}
+                  onChange={(e) =>
+                    handleTransferChange(index, "amount", e.target.value)
+                  }
+                  className="h-10 bg-white text-sm"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Recipient</label>
+                <Input
+                  id={`address-${index}`}
+                  placeholder="Recipient address"
+                  value={transfer.recipient}
+                  onChange={(e) =>
+                    handleTransferChange(index, "recipient", e.target.value)
+                  }
+                  className="h-10 bg-white text-sm"
+                />
+              </div>
             </div>
 
+            {/* Remove button */}
             {transfers.length > 1 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 h-10 w-10"
-                onClick={() => handleRemoveTransfer(index)}
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
+              <div className="flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => handleRemoveTransfer(index)}
+                >
+                  <TrashIcon className="h-4 w-4 mr-1" />
+                  Remove
+                </Button>
+              </div>
             )}
           </div>
         ))}
       </div>
+      
       <div className="flex justify-center">
         <Button 
           variant="outline" 
           onClick={handleAddTransfer}
-          className="h-10 px-6 hover:bg-gray-50"
+          className="h-10 px-4 sm:px-6 hover:bg-gray-50"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Transfer
