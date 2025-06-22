@@ -19,11 +19,15 @@ export default function Home() {
   const { write, status } = useBatchCallContract();
 
   const handleExecute = async () => {
-    if (modules.length === 0) {
-      toast.error("Please add at least one module");
-      return;
+    try {
+      if (modules.length === 0) {
+        toast.error("Please add at least one module");
+        return;
+      }
+      write();
+    } catch (error) {
+      alert("Error executing transaction: " + error);
     }
-    write();
   };
 
   return (
