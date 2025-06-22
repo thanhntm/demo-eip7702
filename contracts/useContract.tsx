@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export const useBatchCallContract = () => {
-  const { sendCalls, status, data } = useSendCalls();
+  const { sendCalls, status, data, error } = useSendCalls();
   const modules = useTaskStore((state) => state.modules);
   const { address } = useAccount();
   const { data: walletClient } = useWalletClient()
@@ -66,72 +66,60 @@ export const useBatchCallContract = () => {
     }
 
   const write = async () => {
-    if (!address) return console.log("address is null");
-    /*
-    const batchCalls = getBatchCalls()
-    console.log("batchCalls",batchCalls)
-    walletClient?.sendCalls({
-      account: address,
-      calls: batchCalls as Call[],
-    })
-    return;
-    */
-   try {
-    const transactionData = modules.map((module, index) => {
-      console.log('module write===>', module);
-      if(module.customInstructions){
-        return module.customInstructions;
-      }
-      // 构建交易数据
-      const data = encodeFunctionData({
-        abi: [module.method],
-        functionName: module.method.name,
-        args: module.method.inputs.length ? Object.values(module.params) : []
+    if (!address) {
+      throw new Error("Wallet not connected");
+    }
+    
+    try {
+      setLoading(true);
+      
+      const transactionData = modules.map((module, index) => {
+        console.log('module write===>', module);
+        if(module.customInstructions){
+          return module.customInstructions;
+        }
+        // 构建交易数据
+        const data = encodeFunctionData({
+          abi: [module.method],
+          functionName: module.method.name,
+          args: module.method.inputs.length ? Object.values(module.params) : []
+        });
+
+        return [{
+          data,
+          to: module.contractAddress as Address,
+          value: module.isPayable ? module.params.payValue : undefined
+        }];
       });
 
-      return [{
-        data,
-        to: module.contractAddress as Address,
-        value: module.isPayable ? module.params.payValue : undefined
-      }];
-    });
+      console.log("Transaction data:", transactionData);
 
-    console.log("Transaction data:", transactionData);
+      // 将二维数组转为一维数组
+      const flatTransactionData = transactionData.flat();
 
-    // 将二维数组转为一维数组
-    const flatTransactionData = transactionData.flat();
-
-    // 构建最终交易对象
-    const transactions = flatTransactionData.map((tx) => ({
-      data: tx.data,
-      to: tx.to,
-      // @ts-ignore
-      value: tx.value ? tx.value : undefined
-    }));
-
-    // console.log("batchCalls",getBatchCalls());
-
-
-    /*
-    transactions.push({
-      // @ts-ignore
-      value: parseEther('0.0001'),
-      to: '0x0000000000000000000000000000000000000000',
-    })
-      */
+      // 构建最终交易对象
+      const transactions = flatTransactionData.map((tx) => ({
+        data: tx.data,
+        to: tx.to,
+        // @ts-ignore
+        value: tx.value ? tx.value : undefined
+      }));
 
     console.log("Final transactions:", transactions);
-    console.log("Address:", transactions);
-    sendCalls({
-      account: address,
-      calls: transactions as Call[],
-    })
-  } catch (error) {
-    console.log('error===>', error);
-    toast.error('Transaction Batch Failed!');
-  } finally {
-    setLoading(false);
-  }
+    
+      const result = await sendCalls({
+        account: address,
+        calls: transactions as Call[],
+      });
+      
+      return result;
+    } catch (error) {
+      console.log('error===>', error);
+      toast.error('Transaction Batch Failed!');
+      throw error; // Re-throw to be caught by handleExecute
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -145,5 +133,6 @@ export const useBatchCallContract = () => {
     write,
     status,
     data,
+    error, // Include error in return
   };
 };

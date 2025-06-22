@@ -9,9 +9,7 @@ import { useTaskStore } from "@/lib/store";
 import { TaskList } from "@/components/modules/TaskList";
 import { useBatchCallContract } from "@/contracts/useContract";
 import { toast } from "sonner";
-import { encodeFunctionData } from "viem";
 import Records from "@/components/history/Records";
-import Footer from "@/components/Footer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, X } from "lucide-react";
 
@@ -20,7 +18,7 @@ export default function Home() {
   const { isConnected } = useAccount();
   const [executionError, setExecutionError] = useState<string | null>(null);
 
-  const { write, status, error } = useBatchCallContract();
+  const { write, status } = useBatchCallContract();
 
   const handleExecute = async () => {
     try {
@@ -32,7 +30,7 @@ export default function Home() {
       // Clear previous errors
       setExecutionError(null);
 
-      write();
+      await write();
     } catch (error: any) {
       const errorMessage =
         error?.message || error?.toString() || "Unknown error occurred";
@@ -42,14 +40,12 @@ export default function Home() {
     }
   };
 
-  // Handle errors from the contract hook
+  // Handle status changes to detect failures
   React.useEffect(() => {
-    if (error) {
-      const errorMessage =
-        error?.message || error?.toString() || "Transaction failed";
-      setExecutionError(errorMessage);
+    if (status === "error") {
+      setExecutionError("Transaction failed. Please try again.");
     }
-  }, [error]);
+  }, [status]);
 
   return (
     <div className="container mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8">
