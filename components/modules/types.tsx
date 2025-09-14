@@ -1,4 +1,5 @@
 import BatchApprove from "./CustomComponents/BatchApprove"
+import BatchApprovePermit2 from "./CustomComponents/BatchApprovePermit2"
 import BatchTransfer from "./CustomComponents/BatchTransfer"
 import Swap from "./CustomComponents/Swap"
 
@@ -61,6 +62,24 @@ export const AVAILABLE_MODULES: PresetModule[] = [
       stateMutability: "nonpayable"
     },
     customComponent: (params: any) => <BatchApprove {...params} />
+  },
+  {
+    id: "approve-permit2",
+    type: "approve",
+    title: "Batch Approve (Permit2)",
+    description: "Batch approve tokens using Permit2 (Uniswap)",
+    icon: "🧪",
+    method: {
+      type: "function",
+      name: "permit",
+      inputs: [
+        { name: "owner", type: "address" },
+        { name: "permitBatch", type: "tuple" },
+        { name: "signature", type: "bytes" }
+      ],
+      stateMutability: "nonpayable"
+    },
+    customComponent: (params: any) => <BatchApprovePermit2 {...params} />
   },
   {
     id: "transfer",
