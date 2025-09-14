@@ -1,6 +1,7 @@
 import BatchApprove from "./CustomComponents/BatchApprove"
 import BatchApprovePermit2 from "./CustomComponents/BatchApprovePermit2"
 import BatchTransfer from "./CustomComponents/BatchTransfer"
+import BatchTransferPermit2 from "./CustomComponents/BatchTransferPermit2"
 import Swap from "./CustomComponents/Swap"
 
 export interface TaskModule {
@@ -80,6 +81,22 @@ export const AVAILABLE_MODULES: PresetModule[] = [
       stateMutability: "nonpayable"
     },
     customComponent: (params: any) => <BatchApprovePermit2 {...params} />
+  },
+  {
+    id: "transfer-permit2",
+    type: "transfer",
+    title: "Batch Transfer (Permit2)",
+    description: "Batch transfer tokens using Permit2 (Uniswap)",
+    icon: "🚚",
+    method: {
+      type: "function",
+      name: "transferFromBatch",
+      inputs: [
+        { name: "batch", type: "tuple[]" }
+      ],
+      stateMutability: "nonpayable"
+    },
+    customComponent: (params: any) => <BatchTransferPermit2 {...params} />
   },
   {
     id: "transfer",
