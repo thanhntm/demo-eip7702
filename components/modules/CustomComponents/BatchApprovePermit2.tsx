@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useSignTypedData, useWriteContract } from "wagmi";
-import { mainnet } from "wagmi/chains";
-import { parseEther } from "viem";
+import { useAccount, useConnect, useDisconnect, useSignTypedData, useWriteContract, usePublicClient } from "wagmi";
+import { mainnet } from "wagmi/chains"; // You can replace with the actual connected chain id dynamically
+import { parseUnits } from "viem";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -39,12 +39,29 @@ const PERMIT2_ABI = [
     ],
     outputs: [],
   },
+  // allowance(owner, token, spender) -> (uint160 amount, uint48 expiration, uint48 nonce)
+  {
+    name: "allowance",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "token", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [
+      { name: "amount", type: "uint160" },
+      { name: "expiration", type: "uint48" },
+      { name: "nonce", type: "uint48" },
+    ],
+  },
 ];
 
 function Permit2Demo() {
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
+  const publicClient = usePublicClient();
 
   const { signTypedDataAsync } = useSignTypedData();
   const { writeContractAsync } = useWriteContract();
@@ -66,17 +83,38 @@ function Permit2Demo() {
       if (!amount) throw new Error("Amount required");
       if (!selectedTokens.length) throw new Error("Select at least one token");
 
-      setStatus("Signing and sending permit...");
+      setStatus("Fetching current nonces...");
       setTxHash("");
 
       const now = Math.floor(Date.now() / 1000);
       const deadline = now + 60 * 60; // 1h
-      const details = selectedTokens.map((token, i) => ({
-        token: token.address,
-        amount: parseEther(amount),
-        expiration: 9999999999,
-        nonce: i, // demo, thực tế nên lấy nonce thực tế
-      }));
+      // Fetch real nonces from Permit2 for each (owner, token, spender)
+      // allowance(...) returns (amount, expiration, nonce)
+      const nonceResults = await Promise.all(
+        selectedTokens.map((token) =>
+          publicClient!.readContract({
+            address: PERMIT2_ADDRESS,
+            abi: PERMIT2_ABI,
+            functionName: "allowance",
+            args: [address, token.address, spender],
+          })
+        )
+      );
+
+      // Parse units per token (fall back to 18 decimals if not provided)
+      const details = selectedTokens.map((token, i) => {
+        const [, , nonce] = nonceResults[i] as any; // (amount, expiration, nonce)
+        const decimals = token.decimals ?? 18;
+        return {
+          token: token.address,
+            // The amount approved per token. Adjust logic if you want different amounts per token.
+          amount: parseUnits(amount, decimals),
+          expiration: BigInt(9999999999),
+          nonce: BigInt(nonce),
+        };
+      });
+
+      setStatus("Signing typed data...");
       const message = { details, spender, sigDeadline: BigInt(deadline) };
       const types = {
         PermitDetails: [
@@ -94,6 +132,7 @@ function Permit2Demo() {
       const signature = await signTypedDataAsync({
         domain: {
           name: "Permit2",
+          // If you want to support multi-chain, replace mainnet.id with the actual connected chain id.
           chainId: mainnet.id,
           verifyingContract: PERMIT2_ADDRESS,
         },
@@ -101,6 +140,7 @@ function Permit2Demo() {
         primaryType: "PermitBatch",
         message,
       });
+      setStatus("Submitting permit transaction...");
       const tx = await writeContractAsync({
         address: PERMIT2_ADDRESS,
         abi: PERMIT2_ABI,
