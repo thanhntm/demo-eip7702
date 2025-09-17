@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useSignTypedData, useWriteContract, usePublicClient } from "wagmi";
+import { useAccount, useConnect, useDisconnect, useSignTypedData, useWriteContract, usePublicClient, useChainId } from "wagmi";
 import { mainnet } from "wagmi/chains"; // You can replace with the actual connected chain id dynamically
 import { parseUnits } from "viem";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import TokenSelect from "./TokenSelect";
-import { TOKENS } from "@/contracts/tokens";
+import { TOKENS, getTokensForChain } from "@/contracts/tokens";
 
 const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
@@ -62,6 +62,7 @@ function Permit2Demo() {
   const { disconnect } = useDisconnect();
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
+  const chainId = useChainId();
 
   const { signTypedDataAsync } = useSignTypedData();
   const { writeContractAsync } = useWriteContract();
@@ -73,8 +74,22 @@ function Permit2Demo() {
   const [txHash, setTxHash] = useState("");
   const [checking, setChecking] = useState(false);
 
-  const tokens = TOKENS.filter((token) => !token.isNative);
+  const tokens = getTokensForChain(chainId).filter((token) => !token.isNative);
   const handleTokenChange = (tokens: any[]) => setSelectedTokens(tokens);
+
+  // Get explorer URL based on chain
+  const getExplorerUrl = (txHash: string) => {
+    switch (chainId) {
+      case 1: // Mainnet
+        return `https://etherscan.io/tx/${txHash}`;
+      case 11155111: // Sepolia
+        return `https://sepolia.etherscan.io/tx/${txHash}`;
+      case 56: // BSC
+        return `https://bscscan.com/tx/${txHash}`;
+      default:
+        return `https://etherscan.io/tx/${txHash}`;
+    }
+  };
 
   async function handlePermit() {
     try {
@@ -132,8 +147,8 @@ function Permit2Demo() {
       const signature = await signTypedDataAsync({
         domain: {
           name: "Permit2",
-          // If you want to support multi-chain, replace mainnet.id with the actual connected chain id.
-          chainId: mainnet.id,
+          // Use the connected chain ID dynamically
+          chainId: chainId,
           verifyingContract: PERMIT2_ADDRESS,
         },
         types,
@@ -221,7 +236,7 @@ function Permit2Demo() {
       {status && <p className="mt-2 text-sm">{status}</p>}
       {txHash && (
         <p>
-          Tx: <a href={`https://etherscan.io/tx/${txHash}`} target="_blank" rel="noreferrer">{txHash}</a>
+          Tx: <a href={getExplorerUrl(txHash)} target="_blank" rel="noreferrer">{txHash}</a>
         </p>
       )}
     </div>

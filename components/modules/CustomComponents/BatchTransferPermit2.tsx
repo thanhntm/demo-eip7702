@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useAccount, useConnect, useDisconnect, useWriteContract, usePublicClient } from "wagmi";
+import { useAccount, useConnect, useDisconnect, useWriteContract, usePublicClient, useChainId } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { parseUnits } from "viem";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import TokenSelect from "./TokenSelect";
-import { TOKENS } from "@/contracts/tokens";
+import { TOKENS, getTokensForChain } from "@/contracts/tokens";
 
 const PERMIT2_ADDRESS = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
@@ -63,22 +63,19 @@ const PERMIT2_ABI = [
 
 
 function Permit2TransferFrom() {
-	const { connect, connectors } = useConnect();
-	const { disconnect } = useDisconnect();
-	const { address, isConnected } = useAccount();
-	const { writeContractAsync } = useWriteContract();
-
-	const [selectedTokens, setSelectedTokens] = useState<any[]>([]);
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { address, isConnected } = useAccount();
+  const { writeContractAsync } = useWriteContract();
+  const chainId = useChainId();	const [selectedTokens, setSelectedTokens] = useState<any[]>([]);
 	const [recipient, setRecipient] = useState("");
 	const [amount, setAmount] = useState("");
 	const [status, setStatus] = useState("");
 	const [txHashes, setTxHashes] = useState<string[]>([]);
 	const [checking, setChecking] = useState(false);
 
-	const tokens = TOKENS.filter((token) => !token.isNative);
-	const handleTokenChange = (tokens: any[]) => setSelectedTokens(tokens);
-
-	async function handleTransferFrom() {
+  const tokens = getTokensForChain(chainId).filter((token) => !token.isNative);
+  const handleTokenChange = (tokens: any[]) => setSelectedTokens(tokens);	async function handleTransferFrom() {
 		try {
 			if (!address) throw new Error("Wallet not connected");
 			if (!selectedTokens.length) throw new Error("Select at least one token");

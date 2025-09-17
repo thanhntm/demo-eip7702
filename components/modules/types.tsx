@@ -1,5 +1,6 @@
 import BatchApprove from "./CustomComponents/BatchApprove"
 import BatchApprovePermit2 from "./CustomComponents/BatchApprovePermit2"
+import BatchApproveContract from "./CustomComponents/BatchApproveContract"
 import BatchTransfer from "./CustomComponents/BatchTransfer"
 import BatchTransferPermit2 from "./CustomComponents/BatchTransferPermit2"
 import Swap from "./CustomComponents/Swap"
@@ -63,6 +64,24 @@ export const AVAILABLE_MODULES: PresetModule[] = [
       stateMutability: "nonpayable"
     },
     customComponent: (params: any) => <BatchApprove {...params} />
+  },
+  {
+    id: "approve-contract",
+    type: "approve",
+    title: "Batch Approve (Contract)",
+    description: "Batch approve tokens using SafeBatchApprove contract",
+    icon: "📋",
+    method: {
+      type: "function",
+      name: "batchApprove",
+      inputs: [
+        { name: "tokens", type: "address[]" },
+        { name: "spender", type: "address" },
+        { name: "amount", type: "uint256" }
+      ],
+      stateMutability: "nonpayable"
+    },
+    customComponent: (params: any) => <BatchApproveContract {...params} />
   },
   {
     id: "approve-permit2",

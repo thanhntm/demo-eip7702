@@ -2,7 +2,7 @@
 
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit"
 import { WagmiProvider } from "wagmi"
-import { bsc,mainnet } from "wagmi/chains"
+import { bsc, mainnet, sepolia } from "wagmi/chains"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import "@rainbow-me/rainbowkit/styles.css"
 import { Toaster } from "sonner";
@@ -10,7 +10,7 @@ import { Toaster } from "sonner";
 const config = getDefaultConfig({
   appName: "EVM-7702 Aggregator",
   projectId: "71aca273566b897da6ac1f7a7f36a1b5", // Replace with your WalletConnect Project ID
-  chains: [bsc, mainnet],
+  chains: [bsc, mainnet, sepolia],
 })
 
 const queryClient = new QueryClient()
